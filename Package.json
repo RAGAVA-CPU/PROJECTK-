@@ -1,0 +1,11 @@
+{
+  "name": "user-management-frontend",
+  "version": "1.0.0",
+  "description": "Simple HTML user management interface",
+  "scripts": {
+    "start": "lite-server"
+  },
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
