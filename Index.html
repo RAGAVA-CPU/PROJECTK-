@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Management</title>
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h2>User Form</h2>
+  <form id="userForm">
+    <input type="hidden" id="userId" />
+    <label>Name: <input type="text" id="name" required /></label><br><br>
+    <label>Email: <input type="email" id="email" required /></label><br><br>
+    <button type="submit">Save User</button>
+  </form>
+
+  <h2>All Users</h2>
+  <table id="userTable">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiUrl = 'https://your-api-gateway-url.com/users';
+
+    async function fetchUsers() {
+      const res = await fetch(apiUrl);
+      const users = await res.json();
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>
+            <button onclick='editUser(${JSON.stringify(user)})'>Edit</button>
+            <button onclick='deleteUser("${user.id}")'>Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function addUser(user) {
+      await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      });
+    }
+
+    async function updateUser(user) {
+      await fetch(`${apiUrl}/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      });
+    }
+
+    async function deleteUser(id) {
+      await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+      fetchUsers();
+    }
+
+    function editUser(user) {
+      document.getElementById('userId').value = user.id;
+      document.getElementById('name').value = user.name;
+      document.getElementById('email').value = user.email;
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = document.getElementById('userId').value;
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const user = { id, name, email };
+      if (id) {
+        await updateUser(user);
+      } else {
+        await addUser({ name, email });
+      }
+      document.getElementById('userForm').reset();
+      fetchUsers();
+    });
+
+    // Initial load
+    fetchUsers();
+  </script>
+</body>
+</html>
